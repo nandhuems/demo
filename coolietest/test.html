@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<body>
+
+<div ng-app="myApp" ng-controller="myCtrl">
+
+	<table class="table table-bordered table-condensed table-responsive">
+      <thead>
+        <tr>
+          <td>S.no.</td>
+          <td>Email</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="user in users">
+          <td>{{user.id}}</td>
+          <td>{{user.email}}</td>
+		  <td><button type="button" class="btn btn-success" ng-click="userEdit(user.id);">Edit</button></td>
+		  <td><button type="button" class="btn btn-success" ng-click="userDelete(user.id)">Delete</button></td>
+        </tr>
+      </tbody>
+    </table>
+	
+	<div class="" ng-if="update == 0">
+		<form name="Lgin" method="post">
+			<h1>Login Page</h1><br>
+			<p align="center" style="background-color:silver;height:200px;width:300px;text-align:center;color:blue;font-weight:bold;"><br><br>
+			Username:<input type="text" name="username" ng-model="vm.username"><br><br>
+			Password:<input type="password" name="password" ng-model="vm.password"><br><br>
+			Forgot Password???<br><br>
+			<input type="submit" name="login" ng-click="postData(vm);"></p>
+		</form>
+   </div>
+  
+	<div class="" ng-if="update == 1">
+		<form name="Lgin" method="post" ng-repeat="userdata in updateusers">
+			<h1>Update Page</h1><br>
+			
+			<p align="center" style="background-color:silver;height:200px;width:300px;text-align:center;color:blue;font-weight:bold;"><br><br>
+			<input type="text" name="id" ng-model="userdata.id" value="userdata.id">
+			Username:<input type="text" name="email" ng-model="userdata.email" value="userdata.email"><br><br>
+			Password:<input type="password" name="pass" ng-model="userdata.pass"><br><br>
+			Forgot Password???<br><br>
+			<input type="submit" name="login" ng-click="updateData(userdata);"></p>
+		</form>
+	</div>
+
+<pre>{{myWelcome}}</pre>
+
+</div>
+
+<script>
+var app = angular.module('myApp', []);
+var baseURL = "http://localhost:81/coolieservice/";
+app.controller('myCtrl', function($scope, $http) {
+  $http.get(baseURL + "login/get_list")
+  .then(function(response, data) {
+      $scope.users = response.data;
+	  console.log(response);
+  });
+  
+  $scope.postData = function(vm){
+	
+		$scope.signup_data = { 'email': vm.username,
+								'pass': vm.password
+							 };
+		
+		$http({
+			method  : 'POST',
+			url     : baseURL + 'login/post_user',
+			data    : $scope.signup_data,
+			headers : {'Content-Type': 'application/json'}
+		}).success(function(data){
+			var $login_msg = data;
+			$scope.pendingMsg = $login_msg.msg;
+		}).error(function(data){
+			var $login_msg = data.status;
+			console.log($login_msg);
+		});
+			
+  };
+  
+  $scope.userDelete = function(id){
+        $http.delete(baseURL +'login/DeleteUser/'+id)
+		.success(function (data, status, headers) {
+			$scope.get_data();
+		})
+		.error(function (data, status, header, config) {
+			
+		});
+  };
+  $scope.update = 0;
+  $scope.userEdit = function(id){
+  $scope.update = 1;
+	$http.get(baseURL + "login/update_list/" +id)
+	  .then(function(response, data) {
+		  $scope.updateusers = response.data;
+		  console.log($scope.updateusers);
+	  });
+  };
+  
+  
+   $scope.updateData = function(userdata){
+	
+		$scope.signup_data = { 
+								'id': userdata.id,
+								'email': userdata.email,
+								'pass': userdata.pass
+							 };
+		
+		$http({
+			method  : 'POST',
+			url     : baseURL + 'login/update_user',
+			data    : $scope.signup_data,
+			headers : {'Content-Type': 'application/json'}
+		}).success(function(data){
+			var $login_msg = data;
+			$scope.pendingMsg = $login_msg.msg;
+		}).error(function(data){
+			var $login_msg = data.status;
+			console.log($login_msg);
+		});
+			
+  };
+  
+});
+</script>
+
+</body>
+</html>
+
